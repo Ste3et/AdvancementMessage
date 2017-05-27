@@ -6,10 +6,12 @@ import com.google.gson.GsonBuilder;
 import net.minecraft.server.v1_12_R1.Item;
 import net.minecraft.server.v1_12_R1.MinecraftKey;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.json.simple.JSONArray;
@@ -218,7 +220,10 @@ public class AdvancementAPI {
     }
     
     @SuppressWarnings("deprecation")
-	public void delete(){
+	public void delete(Player ... player){
+    	for(Player p : player){
+    		Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke " + p.getName() +" only " + getID());
+    	}
     	CraftMagicNumbers.INSTANCE.removeAdvancement(getID());
     }
     
@@ -230,4 +235,10 @@ public class AdvancementAPI {
 	        .findFirst().orElse(null);
 	    return Objects.toString(matching, null);
 	}
+    
+    public void sendPlayer(Player ... player){
+    	for(Player p : player){
+    		Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "advancement grant " + p.getName() +" only " + getID());
+    	}
+    }
 }
