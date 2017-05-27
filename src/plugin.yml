@@ -1,0 +1,10 @@
+name: AdvancementMSG
+main: de.Ste3et_C0st.AdvancementMSG.main.test
+version: 0.1a
+description: test
+author: Ste3et_C0st
+
+commands: 
+  ad:
+    description: terracotta placer main command
+    usage:  /<command>
