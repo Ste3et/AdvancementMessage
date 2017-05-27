@@ -23,7 +23,7 @@ public class test extends JavaPlugin{
 		
 	}
 	
-	public void send(String title, String description, MaterialData material, Player player){
+	public void send(String title, String description, MaterialData material, Player ... player){
 		AdvancementAPI test = new AdvancementAPI(new NamespacedKey(getInstance(), "story/" + UUID.randomUUID().toString()))
         .withFrame(FrameType.CHALLANGE)
         .withTrigger("minecraft:impossible")
