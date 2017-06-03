@@ -40,7 +40,7 @@ public class test extends JavaPlugin{
 			public void run() {
 				test.delete(player);
 			}
-		}, 1);
+		}, 10);
 		
 	}
 	
