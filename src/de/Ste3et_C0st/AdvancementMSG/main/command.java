@@ -61,14 +61,14 @@ public class command implements CommandExecutor  {
 						if(args[2].equalsIgnoreCase("global")){
 							Player[] player = new Player[Bukkit.getOnlinePlayers().size()];
 							player = Bukkit.getOnlinePlayers().toArray(player);
-							test.getInstance().send(title, "505 Title not found", material, player);
+							AdvancementAPIMain.getInstance().send(title, "505 Title not found", material, player);
 						}else{
 							Player player = Bukkit.getPlayer(args[2]);
 							if(player == null || !player.isOnline()){
 								sender.sendMessage("the player " + args[2] + " is not online");
 								return true;
 							}else{
-								test.getInstance().send(title, "505 Title not found", material, player);
+								AdvancementAPIMain.getInstance().send(title, "505 Title not found", material, player);
 							}
 						}
 					}

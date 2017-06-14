@@ -1,8 +1,9 @@
 name: DiceAdvancementAPI
-main: de.Ste3et_C0st.AdvancementMSG.main.test
+main: de.Ste3et_C0st.AdvancementMSG.main.AdvancementAPIMain
 version: 0.1a
 description: test
 author: Ste3et_C0st
+load: POSTWORLD
 
 commands: 
   ad:

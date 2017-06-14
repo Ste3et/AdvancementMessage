@@ -9,6 +9,7 @@ import net.minecraft.server.v1_12_R1.MinecraftKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
@@ -17,6 +18,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Date;
@@ -31,7 +38,7 @@ public class AdvancementAPI {
 
 	private NamespacedKey id;
     private String title, parent, trigger, icon, description, background, frame;
-    private Integer subID = 0;
+    private Integer subID = 0, amount = 0;
     private boolean announce, toast = true;
     private List<ItemStack> items;
 
@@ -121,6 +128,11 @@ public class AdvancementAPI {
         this.background = url;
         return this;
     }
+    
+    public AdvancementAPI withAmount(int i){
+    	this.amount = i;
+    	return this;
+    }
 
     public String getTitle() {
         return title;
@@ -182,6 +194,9 @@ public class AdvancementAPI {
 
     @SuppressWarnings("unchecked")
 	public String getJSON() {
+    	if(this.amount > 0){
+    		return getJson(this.amount);
+    	}
         JSONObject json = new JSONObject();
 
 
@@ -229,6 +244,59 @@ public class AdvancementAPI {
         return prettyJson;
     }
     
+    @SuppressWarnings("unchecked")
+	public String getJson(int amaunt){
+    	if(!getFrame().equalsIgnoreCase("challenge")){
+    		return getJSON();
+    	}
+        JSONObject json = new JSONObject();
+
+        JSONObject icon = new JSONObject();
+        icon.put("item", getIcon());
+        icon.put("data", getIconSubID());
+
+        JSONObject display = new JSONObject();
+        display.put("icon", icon);
+        display.put("title", getTitle());
+        display.put("description", getDescription());
+        display.put("background", getBackground());
+        display.put("frame", getFrame());
+        display.put("announce_to_chat", getAnnouncement());
+        display.put("show_toast", getToast());
+
+        json.put("parent", getParent());
+
+        JSONObject criteria = new JSONObject();
+        JSONObject conditions = new JSONObject();
+        
+
+        JSONArray itemArray = new JSONArray();
+        JSONObject itemJSON = new JSONObject();
+
+        for(ItemStack i : getItems()) {
+            itemJSON.put("item", "minecraft:"+ i.getType().name().toLowerCase());
+            itemJSON.put("amount", i.getAmount());
+            itemArray.add(itemJSON);
+        }
+
+        for(int i = 0; i<=amaunt; i++){
+        	 JSONObject elytra = new JSONObject();
+        	 elytra.put("trigger", "minecraft:impossible");
+        	 conditions.put("items", itemArray);
+             elytra.put("conditions", conditions);
+             criteria.put("key" + i, elytra);
+        }
+
+        json.put("criteria", criteria);
+        json.put("display", display);
+
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String prettyJson = gson.toJson(json);
+
+        return prettyJson;
+    }
+    
     private boolean getToast() {
 		return this.toast;
 	}
@@ -239,9 +307,37 @@ public class AdvancementAPI {
 
 	@SuppressWarnings("deprecation")
 	public void loadAdvancement(){
+		for(World world : Bukkit.getWorlds()){
+			Path path = Paths.get(world.getWorldFolder() + File.separator + "data" 
+		    + File.separator + "advancements" + File.separator + id.getNamespace() + File.separator + getID().getKey().split("/")[0]);
+			
+			Path path2 = Paths.get(world.getWorldFolder() + File.separator + "data" 
+			+ File.separator + "advancements" + File.separator + id.getNamespace() 
+			+ File.separator + getID().getKey().split("/")[0] + File.separator + getID().getKey().split("/")[1] + ".json");
+			
+			if(!path.toFile().exists()){
+				path.toFile().mkdirs();
+			}
+			
+			if(!path2.toFile().exists()){
+				File file = path2.toFile();
+				try {
+					file.createNewFile();
+					FileWriter writer = new FileWriter(file);
+					writer.write(getJSON());
+					writer.flush();
+		    		writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
 		if(Bukkit.getAdvancement(getID()) == null){
 			Bukkit.getUnsafe().loadAdvancement(getID(), getJSON());
 		}
+		
+		AdvancementAPIMain.getInstance().AddAdvancment(this);
     }
 	
 	@SuppressWarnings("deprecation")
@@ -257,7 +353,7 @@ public class AdvancementAPI {
     		}
     	}
     	
-    	Bukkit.getScheduler().runTaskLater(test.getInstance(), new Runnable() {
+    	Bukkit.getScheduler().runTaskLater(AdvancementAPIMain.getInstance(), new Runnable() {
 			@Override
 			public void run() {
 				CraftMagicNumbers.INSTANCE.removeAdvancement(getID());
